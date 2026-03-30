@@ -486,9 +486,18 @@
 
   <!-- POI ZONES -->
   <div class="card poi-card" style="animation-delay:0.15s">
-    <div style="display:flex;justify-content:space-between;align-items:center">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
       <div class="card-label" style="margin:0">Active POI Zones</div>
-      <div style="font-size:10px;color:var(--muted)" id="poi-count">0 zones</div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <div style="display:flex;gap:4px" id="tf-filters">
+          <button onclick="setTF('ALL')" id="tf-ALL" style="padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:var(--gold);color:#000;font-size:9px;font-family:'Space Mono',monospace;cursor:pointer;font-weight:700">ALL</button>
+          <button onclick="setTF('H4')"  id="tf-H4"  style="padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:9px;font-family:'Space Mono',monospace;cursor:pointer">H4</button>
+          <button onclick="setTF('H1')"  id="tf-H1"  style="padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:9px;font-family:'Space Mono',monospace;cursor:pointer">H1</button>
+          <button onclick="setTF('M15')" id="tf-M15" style="padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:9px;font-family:'Space Mono',monospace;cursor:pointer">M15</button>
+          <button onclick="setTF('M5')"  id="tf-M5"  style="padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:9px;font-family:'Space Mono',monospace;cursor:pointer">M5</button>
+        </div>
+        <div style="font-size:10px;color:var(--muted)" id="poi-count">0 zones</div>
+      </div>
     </div>
     <div class="poi-list" id="poi-list">
       <div class="empty">Waiting for data...</div>
@@ -751,101 +760,107 @@ function renderBiasBar(id, val) {
 }
 
 function renderPOI(zones) {
-  const list = document.getElementById('poi-list');
+  _allZones = zones;
+  const list  = document.getElementById('poi-list');
   const count = document.getElementById('poi-count');
-  count.textContent = zones.length + ' zones';
 
-  if (!zones.length) {
-    list.innerHTML = '<div class="empty">No active zones</div>';
+  const filtered = _activeTF === 'ALL'
+    ? zones
+    : zones.filter(z => (z.tf || '--') === _activeTF);
+
+  count.textContent = filtered.length + ' zones' +
+    (_activeTF !== 'ALL' ? ' (' + _activeTF + ')' : '');
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty">' +
+      (_activeTF !== 'ALL' ? 'No ' + _activeTF + ' zones' : 'No active zones') +
+      '</div>';
     return;
   }
 
-  const typeMap = {
-    OB: 'OB', FVG: 'FVG', LIQUIDITY: 'LIQ',
-    EQUAL_HL: 'EQ', REJECTION: 'REJ', BREAKER: 'BRK'
-  };
+  const typeMap   = { OB:'OB', FVG:'FVG', LIQUIDITY:'LIQ', EQUAL_HL:'EQ', REJECTION:'REJ', BREAKER:'BRK' };
+  const typeLabel = { OB:'Order Block', FVG:'Fair Value Gap', LIQ:'Liquidity Pool', EQ:'Equal High/Low', REJ:'Rejection Zone', BRK:'Breaker Block' };
+  const tfColor   = { H4:'var(--gold)', H1:'var(--blue)', M15:'var(--purple)', M5:'var(--green)' };
 
-  const typeLabel = {
-    OB: 'Order Block', FVG: 'Fair Value Gap', LIQ: 'Liquidity Pool',
-    EQ: 'Equal High/Low', REJ: 'Rejection Zone', BRK: 'Breaker Block'
-  };
-
-  // Sort by score descending
-  const sorted = [...zones].sort((a,b) =>
+  const sorted = [...filtered].sort((a,b) =>
     (b.confluence_score||b.score||0) - (a.confluence_score||a.score||0)
   );
 
-  list.innerHTML = sorted.slice(0, 10).map((z, i) => {
-    const typeKey  = typeMap[z.type] || z.type || 'OB';
-    const score    = Math.min(z.confluence_score || z.score || 0, 100);
+  list.innerHTML = sorted.slice(0, 12).map((z, i) => {
+    const typeKey    = typeMap[z.type] || z.type || 'OB';
+    const score      = Math.min(z.confluence_score || z.score || 0, 100);
     const scoreColor = score >= 60 ? 'var(--green)' : score >= 40 ? 'var(--gold)' : 'var(--muted)';
-    const dirClass = (z.direction || '').includes('bull') ? 'bull' : 'bear';
-    const dirLabel = dirClass === 'bull' ? '▲ BULL' : '▼ BEAR';
-    const strength = z.strength || 'VALID';
-    const zl = (z.zone_low  || z.low  || 0).toFixed(1);
-    const zh = (z.zone_high || z.high || 0).toFixed(1);
-    const zmid = ((parseFloat(zl) + parseFloat(zh)) / 2).toFixed(1);
-    const zwidth = (parseFloat(zh) - parseFloat(zl)).toFixed(1);
-
-    // Status info
+    const dirClass   = (z.direction || '').includes('bull') ? 'bull' : 'bear';
+    const dirLabel   = dirClass === 'bull' ? '▲ BULL' : '▼ BEAR';
+    const strength   = z.strength || 'VALID';
+    const zl   = (z.zone_low  || z.low  || 0).toFixed(1);
+    const zh   = (z.zone_high || z.high || 0).toFixed(1);
+    const zmid = ((parseFloat(zl)+parseFloat(zh))/2).toFixed(1);
+    const zw   = (parseFloat(zh)-parseFloat(zl)).toFixed(1);
+    const tf     = z.tf || '--';
+    const tc     = tfColor[tf] || 'var(--muted)';
+    const pois   = (z.poi_types || [z.type||'']).join('+');
     const status = z.status || 'ACTIVE';
-    const tf = z.tf || '--';
-    const pois = (z.poi_types || [z.type || 'OB']).join(' + ');
-    const freshness = z.freshness || '--';
+    const strBg  = strength==='STRONG'?'rgba(0,229,160,0.1)':strength==='MEDIUM'?'rgba(245,200,66,0.1)':'rgba(30,37,64,0.8)';
+    const strClr = strength==='STRONG'?'var(--green)':strength==='MEDIUM'?'var(--gold)':'var(--muted)';
 
-    return `
-      <div class="poi-item ${dirClass}-zone" onclick="toggleDetail(${i})">
-        <div class="poi-item-header">
-          <span class="poi-type-badge ${typeKey}">${typeKey}</span>
-          <div>
-            <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text2)">
-              ${zl} — ${zh}
-            </div>
-            <div style="font-size:9px;color:var(--muted);margin-top:2px">
-              ${typeLabel[typeKey] || typeKey} • ${tf}
-            </div>
-          </div>
-          <span class="poi-dir ${dirClass}" style="font-size:11px">${dirLabel}</span>
-          <div style="flex:1">
-            <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden">
-              <div style="width:${score}%;height:100%;background:${scoreColor};border-radius:2px"></div>
-            </div>
-            <div style="font-size:9px;color:var(--muted);margin-top:2px;text-align:right">${score}</div>
-          </div>
-          <span class="strength-badge ${strength}" style="font-size:9px;padding:2px 6px;border-radius:4px;
-            background:${strength==='STRONG'?'rgba(0,229,160,0.1)':strength==='MEDIUM'?'rgba(245,200,66,0.1)':'rgba(30,37,64,0.8)'};
-            color:${strength==='STRONG'?'var(--green)':strength==='MEDIUM'?'var(--gold)':'var(--muted)'}">
-            ${strength}
-          </span>
-        </div>
-        <div class="poi-item-detail" id="detail-${i}">
-          <div class="poi-detail-item">
-            <div class="pd-label">Midpoint</div>
-            <div class="pd-val" style="color:var(--gold)">${zmid}</div>
-          </div>
-          <div class="poi-detail-item">
-            <div class="pd-label">Width</div>
-            <div class="pd-val">${zwidth} pip</div>
-          </div>
-          <div class="poi-detail-item">
-            <div class="pd-label">Status</div>
-            <div class="pd-val" style="color:${status==='ACTIVE'?'var(--green)':'var(--muted)'}">${status}</div>
-          </div>
-          <div class="poi-detail-item">
-            <div class="pd-label">Timeframe</div>
-            <div class="pd-val" style="color:var(--blue)">${tf}</div>
-          </div>
-          <div class="poi-detail-item">
-            <div class="pd-label">Confluence</div>
-            <div class="pd-val" style="font-size:9px">${pois}</div>
-          </div>
-          <div class="poi-detail-item">
-            <div class="pd-label">Score</div>
-            <div class="pd-val" style="color:${scoreColor}">${score} / 100</div>
+    return `<div class="poi-item ${dirClass}-zone" onclick="toggleDetail(${i})">
+      <div class="poi-item-header">
+        <span class="poi-type-badge ${typeKey}">${typeKey}</span>
+        <div>
+          <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text2)">${zl} — ${zh}</div>
+          <div style="font-size:9px;color:var(--muted);margin-top:2px">
+            ${typeLabel[typeKey]||typeKey}
+            <span style="color:${tc};margin-left:4px;font-weight:700">${tf}</span>
           </div>
         </div>
-      </div>`;
+        <span class="poi-dir ${dirClass}" style="font-size:11px">${dirLabel}</span>
+        <div>
+          <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;width:55px">
+            <div style="width:${score}%;height:100%;background:${scoreColor};border-radius:2px"></div>
+          </div>
+          <div style="font-size:9px;color:${scoreColor};margin-top:2px;text-align:right">${score}</div>
+        </div>
+        <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:${strBg};color:${strClr};font-family:'Space Mono',monospace">${strength}</span>
+      </div>
+      <div id="detail-${i}" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);display:none;grid-template-columns:repeat(3,1fr);gap:6px">
+        <div><div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Midpoint</div>
+             <div style="font-size:11px;font-family:'Space Mono',monospace;color:var(--gold);margin-top:2px">${zmid}</div></div>
+        <div><div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Width</div>
+             <div style="font-size:11px;font-family:'Space Mono',monospace;margin-top:2px">${zw} pip</div></div>
+        <div><div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Status</div>
+             <div style="font-size:11px;font-family:'Space Mono',monospace;color:${status==='ACTIVE'?'var(--green)':'var(--muted)'};margin-top:2px">${status}</div></div>
+        <div><div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Timeframe</div>
+             <div style="font-size:11px;font-family:'Space Mono',monospace;color:${tc};margin-top:2px">${tf}</div></div>
+        <div><div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Confluence</div>
+             <div style="font-size:10px;font-family:'Space Mono',monospace;margin-top:2px">${pois||'--'}</div></div>
+        <div><div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Score</div>
+             <div style="font-size:11px;font-family:'Space Mono',monospace;color:${scoreColor};margin-top:2px">${score}/100</div></div>
+      </div>
+    </div>`;
   }).join('');
+}
+
+let _allZones = [];
+let _activeTF = 'ALL';
+
+function setTF(tf) {
+  _activeTF = tf;
+  // Update button styles
+  ['ALL','H4','H1','M15','M5'].forEach(t => {
+    const btn = document.getElementById('tf-' + t);
+    if (!btn) return;
+    if (t === tf) {
+      btn.style.background = 'var(--gold)';
+      btn.style.color = '#000';
+      btn.style.fontWeight = '700';
+    } else {
+      btn.style.background = 'transparent';
+      btn.style.color = 'var(--muted)';
+      btn.style.fontWeight = 'normal';
+    }
+  });
+  renderPOI(_allZones);
 }
 
 function toggleDetail(i) {
