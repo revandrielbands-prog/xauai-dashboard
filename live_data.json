@@ -1,7 +1,7 @@
 {
-  "price": 4505.4,
+  "price": 4506.01,
   "session": "LONDON",
-  "spread_pip": 3.3,
+  "spread_pip": 3.1,
   "atr_pip": 327.9,
   "regime": "TRENDING_VOLATILE",
   "htf_bias": "BEARISH",
@@ -19,7 +19,7 @@
     "max_trades": 0,
     "daily_pnl": 0
   },
-  "last_update": "2026-03-30T20:27:18.420393+00:00",
+  "last_update": "2026-03-30T20:28:48.530567+00:00",
   "approved_zones": [
     {
       "type": "OB",
@@ -232,6 +232,6 @@
     "layer2_monitoring": true,
     "agent3_last_call": "--"
   },
-  "_pushed_at": "2026-03-30T20:27:18.421449+00:00",
-  "_push_count": 368
+  "_pushed_at": "2026-03-30T20:28:48.532228+00:00",
+  "_push_count": 369
 }
