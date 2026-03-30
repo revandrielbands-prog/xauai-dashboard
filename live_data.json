@@ -1,5 +1,5 @@
 {
-  "price": 4558.52,
+  "price": 4558.23,
   "session": "LONDON",
   "spread_pip": 3.3,
   "atr_pip": 327.9,
@@ -19,7 +19,7 @@
     "max_trades": 0,
     "daily_pnl": 0
   },
-  "last_update": "2026-03-30T12:14:22.276993+00:00",
+  "last_update": "2026-03-30T12:15:52.415578+00:00",
   "approved_zones": [
     {
       "type": "OB",
@@ -228,10 +228,10 @@
   "cot": {},
   "vix": 0,
   "layers": {
-    "layer1_last": "12:10 UTC",
+    "layer1_last": "12:15 UTC",
     "layer2_monitoring": false,
     "agent3_last_call": "--"
   },
-  "_pushed_at": "2026-03-30T12:14:22.279423+00:00",
-  "_push_count": 55
+  "_pushed_at": "2026-03-30T12:15:52.417145+00:00",
+  "_push_count": 56
 }
