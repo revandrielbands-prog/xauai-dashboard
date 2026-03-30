@@ -1,7 +1,7 @@
 {
-  "price": 4539.78,
+  "price": 4539.98,
   "session": "LONDON",
-  "spread_pip": 3.1,
+  "spread_pip": 3.3,
   "atr_pip": 309.1,
   "regime": "TRENDING_CLEAN",
   "htf_bias": "BEARISH",
@@ -19,7 +19,7 @@
     "max_trades": 0,
     "daily_pnl": 0
   },
-  "last_update": "2026-03-30T11:14:09.335992+00:00",
+  "last_update": "2026-03-30T11:15:39.992561+00:00",
   "approved_zones": [
     {
       "type": "OB",
@@ -34,20 +34,6 @@
         "OB",
         "OB",
         "FVG"
-      ],
-      "status": "ACTIVE"
-    },
-    {
-      "type": "OB",
-      "direction": "bearish",
-      "zone_low": 4536.07,
-      "zone_high": 4540.45,
-      "confluence_score": 50,
-      "strength": "MEDIUM",
-      "tf": "M5",
-      "poi_types": [
-        "OB",
-        "OB"
       ],
       "status": "ACTIVE"
     },
@@ -186,22 +172,9 @@
     },
     {
       "type": "OB",
-      "direction": "bearish",
-      "zone_low": 4526.44,
-      "zone_high": 4552.46,
-      "confluence_score": 25,
-      "strength": "VALID",
-      "tf": "M15",
-      "poi_types": [
-        "OB"
-      ],
-      "status": "ACTIVE"
-    },
-    {
-      "type": "OB",
-      "direction": "bearish",
-      "zone_low": 4526.44,
-      "zone_high": 4552.46,
+      "direction": "bullish",
+      "zone_low": 4430.58,
+      "zone_high": 4442.82,
       "confluence_score": 25,
       "strength": "VALID",
       "tf": "M15",
@@ -213,9 +186,35 @@
     {
       "type": "OB",
       "direction": "bullish",
-      "zone_low": 4420.22,
-      "zone_high": 4451.31,
-      "confluence_score": 27,
+      "zone_low": 4430.58,
+      "zone_high": 4442.82,
+      "confluence_score": 25,
+      "strength": "VALID",
+      "tf": "M15",
+      "poi_types": [
+        "OB"
+      ],
+      "status": "ACTIVE"
+    },
+    {
+      "type": "OB",
+      "direction": "bearish",
+      "zone_low": 4531.42,
+      "zone_high": 4550.47,
+      "confluence_score": 25,
+      "strength": "VALID",
+      "tf": "M15",
+      "poi_types": [
+        "OB"
+      ],
+      "status": "ACTIVE"
+    },
+    {
+      "type": "OB",
+      "direction": "bullish",
+      "zone_low": 4523.69,
+      "zone_high": 4536.46,
+      "confluence_score": 25,
       "strength": "VALID",
       "tf": "M15",
       "poi_types": [
@@ -229,10 +228,10 @@
   "cot": {},
   "vix": 0,
   "layers": {
-    "layer1_last": "11:10 UTC",
+    "layer1_last": "11:15 UTC",
     "layer2_monitoring": true,
     "agent3_last_call": "--"
   },
-  "_pushed_at": "2026-03-30T11:14:09.335992+00:00",
-  "_push_count": 13
+  "_pushed_at": "2026-03-30T11:15:39.992561+00:00",
+  "_push_count": 14
 }
