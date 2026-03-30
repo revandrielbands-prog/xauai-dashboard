@@ -211,28 +211,51 @@
 
   /* ── POI ZONES ── */
   .poi-card { grid-column: span 8; }
-  .poi-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .poi-list { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
   .poi-item {
-    display: grid;
-    grid-template-columns: 80px 1fr 80px 60px 60px;
-    align-items: center; gap: 10px;
+    display: flex; flex-direction: column;
     padding: 10px 14px;
     background: rgba(255,255,255,0.02);
     border: 1px solid var(--border);
     border-radius: 10px;
     font-size: 12px;
-    transition: background 0.15s;
+    transition: background 0.15s, border-color 0.15s;
+    cursor: pointer;
   }
   .poi-item:hover { background: rgba(255,255,255,0.04); }
+  .poi-item.bull-zone { border-left: 3px solid rgba(0,229,160,0.4); }
+  .poi-item.bear-zone { border-left: 3px solid rgba(255,77,109,0.4); }
+  .poi-item-header {
+    display: grid;
+    grid-template-columns: 70px 1fr 70px 55px 60px;
+    align-items: center; gap: 10px;
+  }
+  .poi-item-detail {
+    display: none;
+    margin-top: 8px; padding-top: 8px;
+    border-top: 1px solid var(--border);
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .poi-detail-item .pd-label {
+    font-size: 9px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .poi-detail-item .pd-val {
+    font-size: 11px; font-family: 'Space Mono', monospace;
+    margin-top: 2px;
+  }
   .poi-type-badge {
     font-size: 10px; font-weight: 600;
     padding: 3px 7px; border-radius: 4px;
     text-align: center; font-family: 'Space Mono', monospace;
   }
-  .poi-type-badge.OB { background: rgba(77,159,255,0.15); color: var(--blue); }
+  .poi-type-badge.OB  { background: rgba(77,159,255,0.15); color: var(--blue); }
   .poi-type-badge.FVG { background: rgba(168,85,247,0.15); color: var(--purple); }
   .poi-type-badge.LIQ { background: rgba(245,200,66,0.15); color: var(--gold); }
-  .poi-type-badge.EQ { background: rgba(0,229,160,0.1); color: var(--green); }
+  .poi-type-badge.EQ  { background: rgba(0,229,160,0.1);  color: var(--green); }
+  .poi-type-badge.REJ { background: rgba(255,77,109,0.1); color: var(--red); }
+  .poi-type-badge.BRK { background: rgba(255,150,50,0.15); color: #ff9632; }
 
   .poi-range {
     font-family: 'Space Mono', monospace;
@@ -737,25 +760,98 @@ function renderPOI(zones) {
     return;
   }
 
-  const typeMap = { OB: 'OB', FVG: 'FVG', LIQUIDITY: 'LIQ', EQUAL_HL: 'EQ' };
-  list.innerHTML = zones.slice(0, 8).map(z => {
-    const typeKey = typeMap[z.type] || z.type;
-    const score = Math.min(z.score || z.confluence_score || 0, 100);
+  const typeMap = {
+    OB: 'OB', FVG: 'FVG', LIQUIDITY: 'LIQ',
+    EQUAL_HL: 'EQ', REJECTION: 'REJ', BREAKER: 'BRK'
+  };
+
+  const typeLabel = {
+    OB: 'Order Block', FVG: 'Fair Value Gap', LIQ: 'Liquidity Pool',
+    EQ: 'Equal High/Low', REJ: 'Rejection Zone', BRK: 'Breaker Block'
+  };
+
+  // Sort by score descending
+  const sorted = [...zones].sort((a,b) =>
+    (b.confluence_score||b.score||0) - (a.confluence_score||a.score||0)
+  );
+
+  list.innerHTML = sorted.slice(0, 10).map((z, i) => {
+    const typeKey  = typeMap[z.type] || z.type || 'OB';
+    const score    = Math.min(z.confluence_score || z.score || 0, 100);
     const scoreColor = score >= 60 ? 'var(--green)' : score >= 40 ? 'var(--gold)' : 'var(--muted)';
     const dirClass = (z.direction || '').includes('bull') ? 'bull' : 'bear';
     const dirLabel = dirClass === 'bull' ? '▲ BULL' : '▼ BEAR';
     const strength = z.strength || 'VALID';
+    const zl = (z.zone_low  || z.low  || 0).toFixed(1);
+    const zh = (z.zone_high || z.high || 0).toFixed(1);
+    const zmid = ((parseFloat(zl) + parseFloat(zh)) / 2).toFixed(1);
+    const zwidth = (parseFloat(zh) - parseFloat(zl)).toFixed(1);
+
+    // Status info
+    const status = z.status || 'ACTIVE';
+    const tf = z.tf || '--';
+    const pois = (z.poi_types || [z.type || 'OB']).join(' + ');
+    const freshness = z.freshness || '--';
+
     return `
-      <div class="poi-item">
-        <span class="poi-type-badge ${typeKey}">${typeKey}</span>
-        <span class="poi-range">${(z.zone_low||z.low||0).toFixed(1)} — ${(z.zone_high||z.high||0).toFixed(1)}</span>
-        <span class="poi-dir ${dirClass}">${dirLabel}</span>
-        <div class="poi-score-bar">
-          <div class="poi-score-fill" style="width:${score}%;background:${scoreColor}"></div>
+      <div class="poi-item ${dirClass}-zone" onclick="toggleDetail(${i})">
+        <div class="poi-item-header">
+          <span class="poi-type-badge ${typeKey}">${typeKey}</span>
+          <div>
+            <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text2)">
+              ${zl} — ${zh}
+            </div>
+            <div style="font-size:9px;color:var(--muted);margin-top:2px">
+              ${typeLabel[typeKey] || typeKey} • ${tf}
+            </div>
+          </div>
+          <span class="poi-dir ${dirClass}" style="font-size:11px">${dirLabel}</span>
+          <div style="flex:1">
+            <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden">
+              <div style="width:${score}%;height:100%;background:${scoreColor};border-radius:2px"></div>
+            </div>
+            <div style="font-size:9px;color:var(--muted);margin-top:2px;text-align:right">${score}</div>
+          </div>
+          <span class="strength-badge ${strength}" style="font-size:9px;padding:2px 6px;border-radius:4px;
+            background:${strength==='STRONG'?'rgba(0,229,160,0.1)':strength==='MEDIUM'?'rgba(245,200,66,0.1)':'rgba(30,37,64,0.8)'};
+            color:${strength==='STRONG'?'var(--green)':strength==='MEDIUM'?'var(--gold)':'var(--muted)'}">
+            ${strength}
+          </span>
         </div>
-        <span class="strength-badge ${strength}">${strength}</span>
+        <div class="poi-item-detail" id="detail-${i}">
+          <div class="poi-detail-item">
+            <div class="pd-label">Midpoint</div>
+            <div class="pd-val" style="color:var(--gold)">${zmid}</div>
+          </div>
+          <div class="poi-detail-item">
+            <div class="pd-label">Width</div>
+            <div class="pd-val">${zwidth} pip</div>
+          </div>
+          <div class="poi-detail-item">
+            <div class="pd-label">Status</div>
+            <div class="pd-val" style="color:${status==='ACTIVE'?'var(--green)':'var(--muted)'}">${status}</div>
+          </div>
+          <div class="poi-detail-item">
+            <div class="pd-label">Timeframe</div>
+            <div class="pd-val" style="color:var(--blue)">${tf}</div>
+          </div>
+          <div class="poi-detail-item">
+            <div class="pd-label">Confluence</div>
+            <div class="pd-val" style="font-size:9px">${pois}</div>
+          </div>
+          <div class="poi-detail-item">
+            <div class="pd-label">Score</div>
+            <div class="pd-val" style="color:${scoreColor}">${score} / 100</div>
+          </div>
+        </div>
       </div>`;
   }).join('');
+}
+
+function toggleDetail(i) {
+  const el = document.getElementById('detail-' + i);
+  if (!el) return;
+  el.style.display = el.style.display === 'grid' ? 'none' : 'grid';
 }
 
 function renderSweeps(sweeps) {
