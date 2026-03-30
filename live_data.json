@@ -1,70 +1,35 @@
 {
-  "price": 3024.50,
-  "session": "NEW YORK",
-  "spread_pip": 2.1,
-  "atr_pip": 38.4,
-  "regime": "TRENDING_CLEAN",
-  "htf_bias": "BULLISH",
-  "bias_strength": "STRONG",
+  "price": 4506.56,
+  "session": "OFF SESSION",
+  "spread_pip": 3.3,
+  "atr_pip": 0,
+  "regime": "--",
+  "htf_bias": "--",
+  "bias_strength": "--",
   "trend_layers": {
-    "primer": "BULLISH",
-    "sekunder": "BULLISH",
-    "minor": "BEARISH"
+    "primer": "--",
+    "sekunder": "--",
+    "minor": "--"
   },
   "system": {
     "pipe_connected": true,
     "groq_online": true,
-    "layer2_active": true,
-    "open_trades": 2,
-    "max_trades": 3,
-    "daily_pnl": 45.20
+    "layer2_active": false,
+    "open_trades": 0,
+    "max_trades": 0,
+    "daily_pnl": 0
   },
-  "last_update": "2025-03-29T14:35:00Z",
-  "approved_zones": [
-    {
-      "type": "OB",
-      "direction": "bullish",
-      "zone_low": 3010.0,
-      "zone_high": 3018.5,
-      "confluence_score": 78,
-      "strength": "STRONG"
-    },
-    {
-      "type": "FVG",
-      "direction": "bullish",
-      "zone_low": 3002.0,
-      "zone_high": 3007.5,
-      "confluence_score": 55,
-      "strength": "MEDIUM"
-    }
-  ],
-  "last_signal": {
-    "action": "BUY",
-    "confidence": "HIGH",
-    "style": "INTRADAY",
-    "entry": 3015.5,
-    "sl": 3008.0,
-    "tp": 3035.0,
-    "rr": 2.6
-  },
-  "sweeps": [
-    {
-      "type": "ROUND_NUMBER_SWEEP",
-      "direction": "bullish",
-      "sweep_level": 3000.0,
-      "depth_pip": 8.3
-    }
-  ],
-  "cot": {
-    "bias": "BULLISH",
-    "report_date": "251226",
-    "commercial_net_pct": -18.4,
-    "large_spec_net_pct": 22.1
-  },
-  "vix": 18.43,
+  "last_update": "2026-03-30T05:40:29.216712+00:00",
+  "approved_zones": [],
+  "last_signal": {},
+  "sweeps": [],
+  "cot": {},
+  "vix": 0,
   "layers": {
-    "layer1_last": "14:35 UTC",
-    "layer2_monitoring": true,
-    "agent3_last_call": "14:35 — BUY"
-  }
+    "layer1_last": "--",
+    "layer2_monitoring": false,
+    "agent3_last_call": "--"
+  },
+  "_pushed_at": "2026-03-30T05:40:29.216712+00:00",
+  "_push_count": 1
 }
